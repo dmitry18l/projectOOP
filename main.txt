@@ -1,0 +1,231 @@
+"""
+МОДУЛЬ: РЕЕСТР ГОСТИНИЦЫ
+Реализует систему управления гостиницей с использованием ООП
+Классы: Client, Room, Hotel, HotelRegistry
+"""
+
+class Client:
+    """
+    Класс Клиент (объект второго порядка)
+    ИНКАПСУЛЯЦИЯ: данные клиента скрыты в атрибутах объекта
+    """
+    def __init__(self, name, passport):
+        # Приватные атрибуты (инкапсуляция)
+        self.name = name          # ФИО клиента
+        self.passport = passport  # Паспортные данные
+
+    def __str__(self):
+        """
+        ПОЛИМОРФИЗМ: переопределение метода для строкового представления
+        """
+        return f'Клиент: ФИО "{self.name}", паспорт {self.passport}'
+
+
+class Room:
+    """
+    Класс Номер (объект первого порядка)
+    АГРЕГАЦИЯ: содержит массив клиентов (объектов Client)
+    """
+    def __init__(self, room_number, room_type):
+        # Атрибуты номера
+        self.room_number = room_number  # Номер комнаты
+        self.room_type = room_type      # Тип номера
+        self.clients = []               # АГРЕГАЦИЯ: массив клиентов в номере
+
+    def __str__(self):
+        """
+        ПОЛИМОРФИЗМ: строковое представление номера
+        """
+        return f'Номер {self.room_number} ({self.room_type})'
+
+    def add_client(self, client):
+        """
+        Метод добавления клиента в номер
+        КОМПОЗИЦИЯ: номер "владеет" клиентами
+        """
+        self.clients.append(client)
+
+
+class Hotel:
+    """
+    Класс Гостиница (основной контейнер)
+    АГРЕГАЦИЯ: содержит массив номеров (объектов Room)
+    """
+    def __init__(self):
+        self.rooms = []  # АГРЕГАЦИЯ: массив номеров в гостинице
+
+    def add_room(self, room):
+        """
+        Метод добавления номера в гостиницу
+        """
+        self.rooms.append(room)
+
+
+class HotelRegistry:
+    """
+    Основной управляющий класс реестра
+    Реализует паттерн "Реестр" для управления объектами
+    """
+    def __init__(self):
+        # КОМПОЗИЦИЯ: реестр создает и владеет объектом гостиницы
+        self.hotel = Hotel()  # Создание объекта гостиницы при инициализации
+
+    def create_object(self):
+        """
+        Метод создания новых объектов (пункт меню 1)
+        ФАБРИЧНЫЙ МЕТОД: создает объекты Room и Client
+        """
+        print("\n--- Создание объектов ---")
+        print("1. Создать номер")
+        print("2. Создать клиента")
+    
+        choice = input("Выберите: ")
+
+        # СОЗДАНИЕ НОМЕРА
+        if choice == "1":
+            room_number = input("Введите номер: ")
+            room_type = input("Введите тип номера: ")
+            room = Room(room_number, room_type)  # СОЗДАНИЕ ОБЪЕКТА
+            self.hotel.add_room(room)            # ДОБАВЛЕНИЕ В АГРЕГАТ
+            print(f"Номер {room_number} создан!")
+        
+        # СОЗДАНИЕ КЛИЕНТА
+        elif choice == "2":
+            # ПРОВЕРКА: есть ли номера для заселения
+            if not self.hotel.rooms:
+                print("Сначала создайте номер!")
+                return
+
+            # ВВОД ДАННЫХ КЛИЕНТА
+            name = input("Введите ФИО клиента: ")
+            passport = input("Введите паспорт: ")
+            client = Client(name, passport)  # СОЗДАНИЕ ОБЪЕКТА
+
+            # ВЫБОР НОМЕРА ДЛЯ ЗАСЕЛЕНИЯ
+            print("Доступные номера:")
+            for i, room in enumerate(self.hotel.rooms):
+                print(f"{i+1}. {room}")
+
+            # ОБРАБОТКА ОШИБОК ВВОДА
+            try:
+                room_index = int(input("Выберите номер: ")) - 1
+                self.hotel.rooms[room_index].add_client(client)  # АГРЕГАЦИЯ
+                print(f"Клиент добавлен в номер!")
+            except (ValueError, IndexError):
+                print("Ошибка выбора номера!")
+
+    def display_all(self):
+        """
+        Метод вывода всех объектов (пункт меню 2)
+        ДЕМОНСТРАЦИЯ АГРЕГАЦИИ: обход вложенных объектов
+        """
+        print("\n--- Все объекты ---")
+        # ПРОВЕРКА НАЛИЧИЯ ОБЪЕКТОВ
+        if not self.hotel.rooms:
+            print("Объектов нет")
+            return
+
+        # ОБХОД ВСЕХ НОМЕРОВ И КЛИЕНТОВ
+        for room in self.hotel.rooms:
+            print(f"\n{room}")  # ПОЛИМОРФИЗМ: вызов room.__str__()
+            for client in room.clients:
+                print(f"  {client}")  # ПОЛИМОРФИЗМ: вызов client.__str__()
+
+    def display_specific(self):
+        """
+        Метод просмотра конкретных объектов (пункт меню 3)
+        ДЕМОНСТРАЦИЯ НАВИГАЦИИ ПО ОБЪЕКТАМ
+        """
+        print("\n--- Просмотр объекта ---")
+        # ПРОВЕРКА НАЛИЧИЯ ОБЪЕКТОВ
+        if not self.hotel.rooms:
+            print("Объектов нет")
+            return
+    
+        print("1. Просмотреть номер")
+        print("2. Просмотреть клиента")
+    
+        choice = input("Выберите: ")
+
+        # ПРОСМОТР КОНКРЕТНОГО НОМЕРА
+        if choice == "1":
+            # ВЫВОД СПИСКА НОМЕРОВ
+            for i, room in enumerate(self.hotel.rooms):
+                print(f"{i+1}. {room}")
+
+            # ВЫБОР И ОТОБРАЖЕНИЕ НОМЕРА
+            try:
+                index = int(input("Выберите номер: ")) - 1
+                room = self.hotel.rooms[index]
+                print(f"\n{room}")
+                for client in room.clients:
+                    print(f"  {client}")
+            except (ValueError, IndexError):
+                print("Ошибка выбора номера!")
+        
+        # ПРОСМОТР КОНКРЕТНОГО КЛИЕНТА
+        elif choice == "2":
+            # СОБИРАЕМ ВСЕХ КЛИЕНТОВ ИЗ ВСЕХ НОМЕРОВ
+            all_clients = []
+            for room in self.hotel.rooms:
+                all_clients.extend(room.clients)  # АГРЕГАЦИЯ: сбор клиентов
+    
+            # ПРОВЕРКА НАЛИЧИЯ КЛИЕНТОВ
+            if not all_clients:
+                print("Клиентов нет")
+                return
+    
+            # ВЫВОД СПИСКА КЛИЕНТОВ
+            for i, client in enumerate(all_clients):
+                print(f"{i+1}. {client.name}")
+    
+            # ВЫБОР И ОТОБРАЖЕНИЕ КЛИЕНТА
+            try:
+                index = int(input("Выберите клиента: ")) - 1
+                print(f"\n{all_clients[index]}")  # ПОЛИМОРФИЗМ
+            except (ValueError, IndexError):
+                print("Ошибка выбора клиента!")
+
+
+# ТОЧКА ВХОДА В ПРОГРАММУ
+if __name__ == "__main__":
+    """
+    Главная функция программы
+    Реализует основной цикл приложения
+    """
+    def main():
+        # СОЗДАНИЕ ОБЪЕКТА РЕЕСТРА
+        registry = HotelRegistry()  # ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ
+    
+        # ГЛАВНЫЙ ЦИКЛ ПРОГРАММЫ
+        while True:
+            # ОТОБРАЖЕНИЕ ЗАГОЛОВКА
+            print("\n" + "=" * 30)
+            print("РЕЕСТР ГОСТИНИЦЫ")
+            print("=" * 30)
+            
+            # ОСНОВНОЕ МЕНЮ (4 пункта как требуется)
+            print("1. Создание нового объекта")
+            print("2. Вывод всех объектов")
+            print("3. Просмотр объекта")
+            print("4. Выход")
+        
+            # ОБРАБОТКА ВЫБОРА ПОЛЬЗОВАТЕЛЯ
+            choice = input("Выберите пункт: ")
+        
+            # ДИСПЕТЧЕРИЗАЦИЯ КОМАНД
+            if choice == "1":
+                registry.create_object()      # СОЗДАНИЕ
+            elif choice == "2":
+                registry.display_all()        # ПОКАЗ ВСЕГО
+            elif choice == "3":
+                registry.display_specific()   # ПОКАЗ КОНКРЕТНОГО
+            elif choice == "4":
+                print("Выход из программы")   # ЗАВЕРШЕНИЕ
+                break
+            else:
+                # ОБРАБОТКА НЕВЕРНОГО ВВОДА
+                print("Неверный выбор! Попробуйте снова.")
+
+    # ЗАПУСК ГЛАВНОЙ ФУНКЦИИ
+    main()
