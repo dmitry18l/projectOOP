@@ -163,41 +163,57 @@ def main():
 
         choice = input("Выберите пункт меню: ")
 
-        if choice == "1":
-            name = input("Название республики: ")
-            pop = int(input("Население: "))
-            capital = input("Столица: ")
-            president = input("Президент: ")
-            term = int(input("Срок полномочий (лет): "))
-            registry.add_state(Republic(name, pop, capital, president, term))
+        try:
+            if choice == "1":
+                name = input("Название республики: ")
+                pop = int(input("Население: "))
+                capital = input("Столица: ")
+                president = input("Президент: ")
+                term = int(input("Срок полномочий (лет): "))
+                registry.add_state(Republic(name, pop, capital, president, term))
 
-        elif choice == "2":
-            name = input("Название монархии: ")
-            pop = int(input("Население: "))
-            capital = input("Столица: ")
-            monarch = input("Имя монарха: ")
-            registry.add_state(Monarchy(name, pop, capital, monarch))
+            elif choice == "2":
+                name = input("Название монархии: ")
+                pop = int(input("Население: "))
+                capital = input("Столица: ")
+                monarch = input("Имя монарха: ")
+                registry.add_state(Monarchy(name, pop, capital, monarch))
 
-        elif choice == "3":
-            name = input("Название королевства: ")
-            pop = int(input("Население: "))
-            capital = input("Столица: ")
-            king = input("Имя короля: ")
-            dynasty = input("Династия: ")
-            registry.add_state(Kingdom(name, pop, capital, king, dynasty))
+            elif choice == "3":
+                name = input("Название королевства: ")
+                pop = int(input("Население: "))
+                capital = input("Столица: ")
+                king = input("Имя короля: ")
+                dynasty = input("Династия: ")
+                registry.add_state(Kingdom(name, pop, capital, king, dynasty))
 
-        elif choice == "4":
-            registry.show_all()
+            elif choice == "4":
+                registry.show_all()
 
-        elif choice == "5":
-            registry.show_detailed()
+            elif choice == "5":
+                registry.show_detailed()
 
-        elif choice == "0":
-            print("Завершение работы программы.")
-            break
+            elif choice == "0":
+                print("Завершение работы программы.")
+                break
 
-        else:
-            print("Неверный выбор. Попробуйте снова.\n")
+            else:
+                print("Неверный выбор. Попробуйте снова.\n")
+
+        # =======================================================================
+        # ПЕРЕХВАТ ОШИБОК
+        # =======================================================================
+        # Демонстрация применения try-except для нескольких стандартных исключений
+        # - ValueError: некорректный ввод числа
+        # - IndexError: если вдруг обращаемся к несуществующему элементу списка
+        # - Exception: общий перехват всех остальных ошибок
+        # =======================================================================
+        except ValueError as ve:
+            print(f"Ошибка ввода: {ve}. Пожалуйста, введите корректное число.\n")
+        except IndexError as ie:
+            print(f"Ошибка индексации: {ie}. Проверьте вводимые данные.\n")
+        except Exception as e:
+            print(f"Произошла непредвиденная ошибка: {e}\n")
 
 
 # =======================================================================
