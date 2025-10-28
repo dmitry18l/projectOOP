@@ -1,0 +1,186 @@
+# =======================================================================
+# ЛОГИКА: КЛАССЫ И РЕЕСТР
+# =======================================================================
+
+class State:
+    """Базовый класс 'Государство'
+    
+    Принципы ООП:
+    - Инкапсуляция: скрывает детали объекта и предоставляет методы для работы с данными.
+    - Наследование: другие классы будут наследовать State, чтобы использовать его свойства и методы.
+    """
+
+    def __init__(self, name, population, capital):
+        # Атрибуты объекта
+        self.name = name
+        self.population = population
+        self.capital = capital
+
+    def get_info(self):
+        """Метод для вывода полной информации о государстве
+        Полиморфизм: переопределяется в наследниках для разного поведения.
+        """
+        return f"Государство {self.name}, столица {self.capital}, население {self.population} чел."
+
+    def get_type(self):
+        """Тип государственного устройства (по умолчанию — просто 'Государство')"""
+        return "Государство"
+
+    def __str__(self):
+        """Краткое представление объекта (используется для списка)
+        Инкапсуляция: пользователь видит готовую строку, не зная деталей.
+        """
+        return f"{self.get_type()}: {self.name} (столица: {self.capital}, население: {self.population} чел.)"
+
+
+# -----------------------------------------------------------------------
+# НАСЛЕДНИКИ (демонстрация наследования и полиморфизма)
+# -----------------------------------------------------------------------
+
+class Republic(State):
+    """Республика — форма правления, где власть избирается"""
+    def __init__(self, name, population, capital, president, term):
+        super().__init__(name, population, capital)  # Наследование конструктора базового класса
+        self.president = president
+        self.term = term
+
+    def get_info(self):
+        """Полиморфизм: метод get_info ведет себя иначе, чем в базовом классе"""
+        return (f"Республика {self.name}\n"
+                f"Столица: {self.capital}\n"
+                f"Население: {self.population}\n"
+                f"Президент: {self.president}, срок полномочий: {self.term} лет\n")
+
+    def get_type(self):
+        return "Республика"
+
+
+class Monarchy(State):
+    """Монархия — форма правления, где власть принадлежит монарху"""
+    def __init__(self, name, population, capital, monarch):
+        super().__init__(name, population, capital)
+        self.monarch = monarch
+
+    def get_info(self):
+        """Полиморфизм: метод get_info ведет себя иначе, чем в базовом классе"""
+        return (f"Монархия {self.name}\n"
+                f"Монарх: {self.monarch}\n"
+                f"Столица: {self.capital}\n"
+                f"Население: {self.population}\n")
+
+    def get_type(self):
+        return "Монархия"
+
+
+class Kingdom(Monarchy):
+    """Королевство — разновидность монархии"""
+    def __init__(self, name, population, capital, king, dynasty):
+        super().__init__(name, population, capital, king)
+        self.dynasty = dynasty
+
+    def get_info(self):
+        """Полиморфизм: метод get_info ведет себя иначе, чем в Monarchy"""
+        return (f"Королевство {self.name}\n"
+                f"Король: {self.monarch} (династия {self.dynasty})\n"
+                f"Столица: {self.capital}\n"
+                f"Население: {self.population}\n")
+
+    def get_type(self):
+        return "Королевство"
+
+
+# -----------------------------------------------------------------------
+# РЕЕСТР (демонстрация композиции)
+# -----------------------------------------------------------------------
+
+class Registry:
+    """Реестр, который хранит список объектов типа State
+    
+    Принципы ООП:
+    - Композиция: хранит объекты других классов внутри себя (список states)
+    - Полиморфизм: метод show_detailed вызывает get_info у каждого объекта, вызывая свою версию метода.
+    """
+
+    def __init__(self):
+        self.states = []  # Список объектов (Republic, Monarchy, Kingdom)
+
+    def add_state(self, state):
+        """Добавление нового государства в реестр"""
+        self.states.append(state)
+
+    def show_all(self):
+        """Краткий список всех государств"""
+        if not self.states:
+            print("Реестр пуст.")
+            return
+        print("Список всех государств:")
+        for idx, state in enumerate(self.states, start=1):
+            print(f"{idx}. {state}")
+
+    def show_detailed(self):
+        """Подробная информация — демонстрация полиморфизма"""
+        if not self.states:
+            print("Реестр пуст.")
+            return
+        print("Подробная информация о государствах:")
+        for state in self.states:
+            print(state.get_info())  # Полиморфизм: каждый объект выводит свою версию get_info
+
+
+# =======================================================================
+# ИНТЕРФЕЙС: КОНСОЛЬНОЕ МЕНЮ
+# =======================================================================
+
+def main():
+    registry = Registry()
+
+    while True:
+        print("\n=== Реестр государств ===")
+        print("1. Добавить республику")
+        print("2. Добавить монархию")
+        print("3. Добавить королевство")
+        print("4. Просмотреть краткий список")
+        print("5. Просмотреть подробную информацию")
+        print("0. Выход")
+
+        choice = input("Выберите пункт меню: ")
+
+        if choice == "1":
+            name = input("Название республики: ")
+            pop = int(input("Население: "))
+            capital = input("Столица: ")
+            president = input("Президент: ")
+            term = int(input("Срок полномочий (лет): "))
+            registry.add_state(Republic(name, pop, capital, president, term))
+
+        elif choice == "2":
+            name = input("Название монархии: ")
+            pop = int(input("Население: "))
+            capital = input("Столица: ")
+            monarch = input("Имя монарха: ")
+            registry.add_state(Monarchy(name, pop, capital, monarch))
+
+        elif choice == "3":
+            name = input("Название королевства: ")
+            pop = int(input("Население: "))
+            capital = input("Столица: ")
+            king = input("Имя короля: ")
+            dynasty = input("Династия: ")
+            registry.add_state(Kingdom(name, pop, capital, king, dynasty))
+
+        elif choice == "4":
+            registry.show_all()
+
+        elif choice == "5":
+            registry.show_detailed()
+
+        elif choice == "0":
+            print("Завершение работы программы.")
+            break
+
+        else:
+            print("Неверный выбор. Попробуйте снова.")
+
+
+if __name__ == "__main__":
+    main()
