@@ -1,0 +1,78 @@
+import time
+
+# --- Наблюдаемый объект (Subject) ---
+
+def create_student(name):
+    """Создает студента как словарь с параметрами и списком наблюдателей."""
+    return {
+        "name": name,
+        "params": {"behavior": 5},
+        "observers": []
+    }
+
+
+def add_observer(student, observer_func):
+    """Добавляет наблюдателя (функцию) к студенту."""
+    student["observers"].append(observer_func)
+
+
+def remove_observer(student, observer_func):
+    """Удаляет наблюдателя (функцию) из списка."""
+    if observer_func in student["observers"]:
+        student["observers"].remove(observer_func)
+
+
+def notify_observers(student, *args):
+    """Вызывает все функции-наблюдатели, передавая им студента и аргументы."""
+    for observer in student["observers"]:
+        observer(student, *args)
+
+
+def set_value(student, measure_type, val):
+    """Изменяет значение параметра и уведомляет наблюдателей."""
+    if measure_type in student["params"]:
+        student["params"][measure_type] = val
+        notify_observers(student, measure_type)
+    else:
+        print("Такого параметра нет")
+
+
+def get_value(student, measure_type):
+    """Возвращает значение параметра студента."""
+    return student["params"].get(measure_type)
+
+
+# --- Наблюдатель (Observer) ---
+
+def behavior_monitor(student, *args):
+    """Функция-наблюдатель, реагирующая на изменение поведения."""
+    if "behavior" in args:
+        behavior = get_value(student, "behavior")
+
+        if behavior == 5:
+            print(f"Отличное поведение ({behavior}) ")
+        elif behavior == 4:
+            print(f"Хорошее поведение ({behavior}) ")
+        else:
+            print(f"Плохое поведение ({behavior}) ")
+    else:
+        print("Наблюдатель получил неизвестное уведомление.")
+
+
+# --- Демонстрация работы ---
+
+if __name__ == "__main__":
+    student = create_student("Миша")
+
+    # Добавляем наблюдателя
+    add_observer(student, behavior_monitor)
+
+    print("Начальное состояние:")
+    set_value(student, "behavior", 5)
+
+    behaviors = [4, 3, 5, 2, 4]
+
+    for i, behavior in enumerate(behaviors, 1):
+        print(f"\nИзменение {i}:")
+        set_value(student, "behavior", behavior)
+        time.sleep(1)
