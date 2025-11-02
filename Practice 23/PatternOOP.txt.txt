@@ -1,0 +1,121 @@
+import time
+
+class AbstractClass:
+    """
+    Абстрактный класс для объектов, за которыми можно наблюдать
+    """
+    def __init__(self):
+        self._observers = []  # Здесь хранятся все подписанные наблюдатели
+
+    def add_obs(self, observer):
+        """Добавляет наблюдателя в список подписчиков"""
+        self._observers.append(observer)
+
+    def remove_obs(self, observer):
+        """Удаляет наблюдателя из списка подписчиков"""
+        if observer in self._observers:
+            self._observers.remove(observer)
+
+    def notify_observer(self, *args):
+        """
+        Уведомляет всех наблюдателей об изменении.
+        """
+        for observer in self._observers:
+            # Каждому наблюдателю отправляем уведомление с аргументами
+            observer.update(self, *args)
+
+
+class AbstractObserver:
+    """
+    Абстрактный класс для наблюдателей
+    Определяет интерфейс, который должны реализовать все наблюдатели.
+    """
+    def __init__(self):
+        pass 
+
+    def update(self, *args):
+        """
+        Абстрактный метод, который должен быть реализован в конкретных наблюдателях.
+        """
+        pass
+
+
+class Student(AbstractClass):
+    """
+    Конкретный наблюдаемый объект - студент.
+    Наследуется от AbstractClass, поэтому может уведомлять наблюдателей о своих изменениях.
+    """
+    def __init__(self, name):
+        super().__init__()  # Вызов конструктора родительского класса для инициализации списка наблюдателей
+        self.name = name
+        self.params = {"behavior": 5}
+
+    def set_value(self, measure_type, val):
+        """
+        Устанавливает значение параметра и уведомляет наблюдателей об изменении.
+        measure_type - тип параметра (например, "behavior")
+        val - новое значение параметра
+        """
+        if measure_type in self.params:
+            self.params[measure_type] = val  
+            self.notify_observer(measure_type)  # Ключевой момент: уведомляем всех наблюдателей об изменении!
+        else:
+            print("Такого параметра нет") 
+
+    def get_value(self, measure_type):
+        """Возвращает значение параметра или None, если параметр не существует"""
+        if measure_type in self.params:
+            return self.params[measure_type]
+        else:
+            return None
+
+
+class BehaviorMonitor(AbstractObserver):
+    """
+    Конкретный наблюдатель - мониторинг поведения.
+    Следит за изменениями поведения студента и реагирует на них.
+    """
+    def __init__(self):
+        super().__init__()
+
+    def update(self, subject, *args):
+        """
+        Метод, который вызывается при уведомлении от наблюдаемого объекта.
+        subject - объект, который отправил уведомление (в нашем случае Student)
+        *args - дополнительные аргументы (в нашем случае передается measure_type)
+        """
+        if type(subject).__name__ == 'Student':
+            # Получаем текущее значение поведения у студента
+            behavior = subject.get_value("behavior")  
+            if behavior == 5:
+                print("Отличное поведение: " + str(behavior))
+            elif behavior == 4:
+                print("Хорошее поведение: " + str(behavior))
+            else:
+                print("Плохое поведение: " + str(behavior))
+        else:
+            pass  # Игнорируем уведомления от других типов объектов
+
+
+if __name__ == "__main__":
+    """
+    Демонстрация работы паттерна Наблюдатель.
+    """
+
+    sub = Student("Миша")
+    
+    # Создаем мониторинг поведения (наблюдатель)
+    obs1 = BehaviorMonitor() 
+    
+    # Подписываем наблюдателя на студента (связываем их)
+    sub.add_obs(obs1)  
+    
+    print("Начальное состояние:")
+    sub.set_value("behavior", 5)
+    
+    behaviors = [4, 3, 5, 2, 4]
+    
+    for i, behavior in enumerate(behaviors, 1):
+        print(f"\nИзменение {i}:")
+        sub.set_value("behavior", behavior)  # При каждом изменении наблюдатель автоматически получает уведомление!
+        time.sleep(1)
