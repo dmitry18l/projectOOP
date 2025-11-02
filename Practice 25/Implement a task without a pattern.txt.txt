@@ -1,0 +1,38 @@
+import time
+
+class Student:
+    """
+    Класс студента без паттерна Наблюдатель.
+    Вся логика реакции на изменение поведения встроена прямо сюда.
+    """
+    def __init__(self, name):
+        self.name = name
+        self.behavior = 5
+
+    def set_behavior(self, val):
+        """Изменяем поведение и сразу вызываем реакцию."""
+        self.behavior = val
+        self._react_to_behavior()
+
+    def _react_to_behavior(self):
+        """Логика реакции встроена внутрь самого студента."""
+        if self.behavior == 5:
+            print(f"Отличное поведение ({self.behavior}) ")
+        elif self.behavior == 4:
+            print(f"Хорошее поведение ({self.behavior}) ")
+        else:
+            print(f"Плохое поведение ({self.behavior}) ")
+
+
+if __name__ == "__main__":
+    student = Student("Миша")
+
+    print("Начальное состояние:")
+    student.set_behavior(5)
+
+    behaviors = [4, 3, 5, 2, 4]
+
+    for i, behavior in enumerate(behaviors, 1):
+        print(f"\nИзменение {i}:")
+        student.set_behavior(behavior)
+        time.sleep(1)
