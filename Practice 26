@@ -1,0 +1,65 @@
+import time
+
+class Student:
+    def __init__(self, name):
+        self.name = name
+        self._observers = []
+        self._params = {}
+
+    def add_observer(self, observer):
+        self._observers.append(observer)
+
+    def remove_observer(self, observer):
+        self._observers.remove(observer)
+
+    def set_value(self, measure_type, val):
+        # Проверяем, существует ли параметр
+        if measure_type == "behavior":
+            self._params[measure_type] = val
+            self.notify_observer(measure_type)
+        else:
+            print("Такого параметра нет")
+
+    def get_value(self, measure_type):
+        return self._params.get(measure_type, None)
+
+    def notify_observer(self, measure_type):
+        for observer in self._observers:
+            observer.update(self, measure_type)
+
+
+class BehaviorMonitor:
+    def update(self, subject, measure_type):
+        # Проверяем, что обновление пришло от Student
+        if isinstance(subject, Student):
+            behavior = subject.get_value(measure_type)
+            if behavior == 5:
+                print(f"Оценка {behavior} - Отличное поведение")
+            elif behavior == 4:
+                print(f"Оценка {behavior} - Хорошее поведение")
+            elif behavior == 3:
+                print(f"Оценка {behavior} - Плохое поведение")
+            else:
+                # Игнорируем уведомление
+                pass
+
+
+# === Демонстрация работы ===
+if __name__ == "__main__":
+    student = Student("Иван")
+    monitor = BehaviorMonitor()
+
+    student.add_observer(monitor)
+
+    # Изменяем поведение с паузами
+    student.set_value("behavior", 5)
+    time.sleep(1)
+
+    student.set_value("behavior", 3)
+    time.sleep(1)
+
+    student.set_value("behavior", 5)
+    time.sleep(1)
+
+    student.set_value("behavior", 4)
+    time.sleep(1)
